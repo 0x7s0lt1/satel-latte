@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#">
+    <head>
+        <link rel="manifest" href="manifest.json"> 
+        <link rel="shortcut icon" href="assets/images/favicon/favicon.ico"/>
+        <link rel="apple-touch-icon" href="assets/images/favicon/favicon.ico">
+        <meta name="theme-color" content="#000000">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="#000000">
+        <meta name="author" content="https://zsoltfehervari.xyz/">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta property="og:site_name" content="">
+        <meta property="og:title" content="" />
+        <meta property="og:type" content="website"/>
+        <meta property="og:url" content="" />
+        <meta property="og:image" content="" />
+        <link rel="canonical" href="" />
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta http-equiv="content-language" content="en">
+        <meta name="format-detection" content="telephone=yes">
+        <meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+        <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
+        <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+        <script src="https://cdn.socket.io/4.0.1/socket.io.min.js" integrity="sha384-LzhRnpGmQP+lOvWruF/lgkcqD+WDVt9fU3H4BWmwP5u5LTmkUGafMcpZKNObVMLU" crossorigin="anonymous"></script>
+        <!--FONTS-->
+        <link rel="stylesheet" href="./assets/css/all.css" >
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script> 
+        <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+        <script src="https://code.createjs.com/1.0.0/tweenjs.min.js"></script>
+        <link rel="stylesheet" href="assets/css/css.css">
+        <title>Live Satellite Info</title>
+        </head>
+    <body>
+    
+    <div class="menu" >
+        <div id="menu_btn" onclick="App.toggleMenu()"><i class="fas fa-caret-left"></i></div>
+    <section class="controls">
+        <header>
+            <span>Satel<i class="fad fa-coffee-togo"></i>latte</span>
+        </header>
+        <hr>
+        <section>
+        <label class="badge bg-secondary">Viewe</label>
+        <br>
+            <div class="btn-group" role="group" style="min-width: 100%;">
+                <button onclick="App.changeViewer('flat')"  type="button" class="btn btn-outline-primary" >2D</button>
+                <button onclick="App.changeViewer('globe')" type="button" class="btn btn-outline-primary" >3D</button>
+            </div>
+        </section>
+        <hr>
+        <section>
+        <label class="badge bg-secondary">Satteliets list:&nbsp;&nbsp; <span title="Satellite with this marker has 3D model">&#9826;</span></label>
+        <br>
+        <select id="sat_select" class="form-select c_btn" data-bs-toggle="tooltip" data-bs-placement="right" title="Tooltip on top">
+            <option value="null">Select satellite</option>
+        </select>
+        </section>
+        <hr>
+        <section>
+        <label class="badge bg-secondary">Custom TLE &nbsp;<a style="color: white;" title="Aboute TLE" target="_blank" href="https://en.wikipedia.org/wiki/Two-line_element_set"><i class="fas fa-question-circle"></i></a></label>
+        <br>
+        <input class="form-control c_btn" type="text" placeholder="TLE:">
+        </section>
+        <hr>
+        <section>
+            <label class="badge bg-secondary">Orbits</label>
+            <br>
+            <div class="orbit_lines">
+                <i class="fas fa-circle" title="Orange" style="color: orange;"></i>
+                Previous
+                <i class="fas fa-circle" title="Red" style="color: red;"></i>
+                Current
+                <i class="fas fa-circle" title="Green" style="color: green;"></i>
+                Next
+            </div>
+            </section>
+            <hr>
+    </section>
+    <section class="menu_footer">
+
+        Created with &#10084; by zsoltfehervari
+    </section>
+    </div>
+
+        <section class="btns">
+            <span style="display: none;" id="km"></span>
+            <i id="get_pos" title="See how far is the satellite from you" class="fas fa-compass" ></i>
+            <br>
+            <span id="info" title="Aboute this Satellite"><i class="fas fa-info-circle"></i></span>
+            <br>
+            <i title='Re-center the satellite' onclick='App.toggleTracking2D()' class="fas fa-crosshairs"></i>
+        </section>
+        
+        <div id="map"></div>
+        <div id="three_map"></div>
+
+    
+        <section id="cord_tart" style="display: none;">
+            <span id="cord"></span>
+        </section>
+
+
+
+        <lottie-player id="loading" src="./assets/json/hand_lottie.json"  background="transparent"  speed="1"  style="width: 300px; height: 300px;"  loop  autoplay></lottie-player>       
+        <div id="modal" class="modal custom fade" tabindex="-1" aria-hidden="true">
+            <div id="modal" class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 id="wiki_title" class="modal-title">WIKI</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="wiki_modal" class="modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </body>
+        <script src="assets/js/satellites_ui.js"></script>
+        <script src="assets/js/three.js" type="module"></script>
+        <script src="./assets/js/app.js"></script>
+
+        <script>
+            
+        window.onload = ()=>{
+
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker
+                .register("./worker.js")
+                .then(function (registration) {
+                    // Registration was successful
+                    console.log(
+                    "Workers ready!",registration.scope
+                    
+                    );
+                })
+                .catch(function (err) {
+                    // registration failed :(
+                    console.log("ServiceWorker registration failed: ", err);
+                });
+            }
+            window.addEventListener("beforeinstallprompt", function (e) {
+                e.userChoice.then(function (choiceResult) {
+                console.log(choiceResult.outcome);
+                if (choiceResult.outcome == "dismissed") {
+                    console.log("User cancelled home screen install");
+                } else {
+                    
+                    console.log("User added to home screen");
+                }
+                });
+            });
+
+        }    
+        </script>
+</html> 
+
