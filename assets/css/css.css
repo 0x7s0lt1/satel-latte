@@ -134,7 +134,7 @@ html,body{
     background: linear-gradient(to right,transparent 70%,rgba(179, 177, 177,0.99));
     transition: all;
     transform: translate(30%);
-    z-index: 1;
+    z-index: 5;
     position: sticky;
     border-radius: 0px 8px 8px 0px;
     cursor: pointer;
@@ -277,6 +277,12 @@ label{
     }
     .c_btn{
         font-size: 4vw;
+    }
+    #km{
+        font-size: 4vw;
+        top: 1.25vw;
+        right: 10.5vw;
+        z-index: 2;
     }
     .orbit_lines{
         font-size: 3vw;
