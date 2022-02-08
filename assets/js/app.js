@@ -68,17 +68,21 @@ App = {
         window.current_sat = null;
 
         for(let i in window.tles){
-
             App.satellite_select.innerHTML += "<option value='"+i+"'>"+ window.tles[i].has3D +" &nbsp;"+i.toUpperCase()+"</option>";
-
         }
 
+        /*
         App.tooltipList = App.tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl,{
                 boundary: document.body
             })
             });
+        */
 
+        App.map.addEventListener('load',()=>{
+            App.loading.style.display = 'none';
+            alert('Loaded');
+        });
         App.sat_marker.setIcon(App.sat_icon);
         App.sat_marker.bindPopup(App.sat_popup);
         App.sat_marker.addTo(App.map);
@@ -116,6 +120,8 @@ App = {
     },
 
     resize : ()=>{
+        App.loading.style.width = window.innerWidth + 'px';
+        App.loading.style.height = window.innerHeight + 'px';
         App.viewers.flat.style.width = (window.innerWidth + 30) + "px";
         App.viewers.flat.style.height = (window.innerHeight + 30) + "px";
         App.map.invalidateSize();
@@ -394,4 +400,4 @@ App = {
 
 }
 
-window.addEventListener('load',App.init,false);
+window.addEventListener('DOMContentLoaded',App.init,false);

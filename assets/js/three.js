@@ -203,7 +203,9 @@ function init(){
     
     obj.add(marker);
     obj.add(earth);
-    scene.add(obj);
+    if(scene.add(obj)){
+        document.getElementById('loading').style.display = 'none';
+    }
     
     var cords = {
         lat : 47.494341,
@@ -281,9 +283,13 @@ function animate(){
 
     }
 
-    sat_model.scene.rotation.x += 0.0003;
-    sat_model.scene.rotation.y += 0.0003;
-    sat_model.scene.rotation.z += 0.0003;
+    if(sat_model != undefined){
+
+        sat_model.scene.rotation.x += 0.0003;
+        sat_model.scene.rotation.y += 0.0003;
+        sat_model.scene.rotation.z += 0.0003;
+    }
+    
 
 
     //console.log(controls.getDistance());
