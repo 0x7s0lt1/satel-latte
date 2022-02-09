@@ -15,6 +15,7 @@ App = {
     buttons : document.querySelector('.btns'),
     menu : document.querySelector('.menu'),
     satellite_select : document.getElementById('sat_select'),
+    custom_tle : document.getElementById('custom_tle'),
     wiki_modal : new bootstrap.Modal(document.getElementById('modal')),
     wiki_modal_body : document.getElementById('wiki_modal'),
     wiki_title : document.getElementById('wiki_title'),
@@ -68,7 +69,10 @@ App = {
         window.current_sat = null;
 
         for(let i in window.tles){
-            App.satellite_select.innerHTML += "<option value='"+i+"'>"+ window.tles[i].has3D +" &nbsp;"+i.toUpperCase()+"</option>";
+            if(i !=  'UNKNOWN'){
+                App.satellite_select.innerHTML += "<option value='"+i+"'>"+ window.tles[i].has3D +" &nbsp;"+i.toUpperCase()+"</option>";
+
+            }
         }
 
         /*
@@ -79,10 +83,7 @@ App = {
             });
         */
 
-        App.map.addEventListener('load',()=>{
-            App.loading.style.display = 'none';
-            alert('Loaded');
-        });
+        
         App.sat_marker.setIcon(App.sat_icon);
         App.sat_marker.bindPopup(App.sat_popup);
         App.sat_marker.addTo(App.map);
@@ -100,6 +101,7 @@ App = {
         App.socket.on('sendTrack',App.renderSatelliteTrack);
         window.addEventListener('resize',App.resize,false);
         App.satellite_select.addEventListener('change',App.changeSatellite,false);
+        App.custom_tle.addEventListener('keydown',App.getCustomSatellite,false);
         document.getElementById('get_pos').addEventListener('click',App.getPosition,false);
         document.getElementById('info').addEventListener('click',App.getWiki,false);
     },
@@ -160,13 +162,14 @@ App = {
         }
 
     },
-    changeSatellite : ()=>{
+    changeSatellite : (tle = null)=>{
 
         if(App.satellite_select.value != null){
 
             App.wiki_modal.hide();
             App.loading.style.display = 'block';
             App.is_starting = true;
+            document.getElementById('info').classList.remove('disabled');
             App.socket.emit('get',window.tles[App.satellite_select.value].tle);
             window.current_sat = App.satellite_select.value;
 
@@ -179,31 +182,59 @@ App = {
             App.removeLine();
         }
     },
+    getCustomSatellite : (e)=>{
+
+        if(e.keyCode == 13){
+
+            let tle = App.custom_tle.value.trim();
+        
+            if(tle != "" && tle != null){
+                
+                App.wiki_modal.hide();
+                App.loading.style.display = 'block';
+                App.is_starting = true;
+                document.getElementById('info').classList.add('disabled');
+    
+                App.socket.emit('get',tle);
+                window.current_sat = 'UNKNOWN';
+                
+            }
+    
+        }
+        
+    },
     getWiki : ()=>{
 
-        App.loading.style.display = 'block';
-
         
-        $.ajax({
-            type: "GET",
-            url: "https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=0&page="+window.tles[window.current_sat].wiki+"&callback=?",
-            contentType: "application/json; charset=utf-8",
-            async: false,
-            dataType: "json",
-            success: function (data) {
-    
-                var markup = data.parse.text["*"];
-                App.wiki_title.innerHTML = window.current_sat.toUpperCase();
-                App.wiki_modal_body.innerHTML = markup;
-                App.wiki_modal.show();
-                App.loading.style.display = 'none';
 
-            },
-            error: function (err) {
-                //console.log(err);
-                App.loading.style.display = 'none';
-            }
-        });
+        if(window.current_sat != 'UNKNOWN'){
+
+            App.loading.style.display = 'block';
+            $.ajax({
+                type: "GET",
+                url: "https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=0&page="+window.tles[window.current_sat].wiki+"&callback=?",
+                contentType: "application/json; charset=utf-8",
+                async: false,
+                dataType: "json",
+                success: function (data) {
+        
+                    var markup = data.parse.text["*"];
+                    App.wiki_title.innerHTML = window.current_sat.toUpperCase();
+                    App.wiki_modal_body.innerHTML = markup;
+                    App.wiki_modal.show();
+                    App.loading.style.display = 'none';
+    
+                },
+                error: function (err) {
+                    //console.log(err);
+                    App.loading.style.display = 'none';
+                }
+            });
+
+        }else{
+            App.oneError('Sorry!','<h3>We can only prived more information about built-in satellites.</h3>')
+        }
+        
 
         
 
@@ -361,9 +392,7 @@ App = {
         App.sat_track_lines.next.setLatLngs(data[2]).addTo(App.map);
 
         }catch(err){
-            console.log(err.message);
-            
-            Object.keys(App.sat_track_lines).forEach(e=>App.sat_track_lines[e].remove());
+            App.clearScreen();
             App.oneError('Orbit Error','<h3>An error occurred while processing the orbit data.</h3>');
         }
         
@@ -377,6 +406,7 @@ App = {
         App.buttons.style.display = 'none';
         App.cords_holder.style.display = 'none';
         App.is_starting = true;
+        Object.keys(App.sat_track_lines).forEach(e=>App.sat_track_lines[e].remove());
 
     },
     oneError : (title,message)=>{

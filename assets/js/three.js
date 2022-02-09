@@ -268,6 +268,7 @@ function animate(){
     controls.update();
 
     if(window.sat_is_changed){
+        
         if(window.tles[window.current_sat].has3D != ""){
             changeSatelliteModel(window.current_sat);
         }

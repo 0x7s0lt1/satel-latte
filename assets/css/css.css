@@ -83,7 +83,7 @@ html,body{
     padding: 8px;
     right: 1vw;
     top: 1.25vw;
-    font-size: 30px;
+    font-size: 1.6vw;
     color: white;
     text-shadow: 0px 0px 10px rgb(82, 82, 131);
     z-index: 5;
@@ -109,6 +109,7 @@ html,body{
     padding-right: 1vw;
     padding-left: 1vw ;
     color: white;
+    z-index: 4;
 }
 
 
@@ -238,6 +239,9 @@ label{
     text-shadow: 0px 0px 10px rgb(105, 105, 105);
 }
 
+.disabled{
+    color: rgb(163, 163, 163);
+}
 
 
 
@@ -281,6 +285,9 @@ label{
         font-size: 9vw;
         
     }
+    .btns{
+        font-size: 7vw;
+    }
     .c_btn{
         font-size: 4vw;
     }
@@ -292,9 +299,13 @@ label{
     }
     .orbit_lines{
         font-size: 3vw;
+        padding-left: 2vw;
+        overflow: hidden;
     }
     .orbit_lines i{
         font-size: 7vw;
+        transform: translateY(15%);
+        text-shadow: 0px 0px 5px rgba(39, 39, 39,0.5);
         padding-bottom: 3vw;
     }
     .menu_footer{

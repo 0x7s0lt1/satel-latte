@@ -64,9 +64,11 @@
         </section>
         <hr>
         <section>
-        <label class="badge bg-secondary">Custom TLE &nbsp;<a style="color: white;" title="Aboute TLE" target="_blank" href="https://en.wikipedia.org/wiki/Two-line_element_set"><i class="fas fa-question-circle"></i></a></label>
+        <label class="badge bg-secondary">TLE: &nbsp;<a style="color: white;" title="Aboute TLE" target="_blank" href="https://en.wikipedia.org/wiki/Two-line_element_set"><i class="fas fa-question-circle"></i></a></label>
         <br>
-        <input class="form-control c_btn" type="text" placeholder="TLE:">
+        <textarea style="resize: none;" class="form-control c_btn" id="custom_tle" type="text" placeholder="TLE:">
+
+        </textarea>
         </section>
         <hr>
         <section>
@@ -126,17 +128,12 @@
           </div>
           
         </body>
-        <script src="assets/js/satellites_ui.js"></script>
+        <script src="assets/js/satellites.js"></script>
         <script src="assets/js/three.js" type="module"></script>
         <script src="./assets/js/app.js"></script>
 
         <script>
 
-            var ld = document.getElementById('loading');
-
-            ld.style.width = window.innerWidth + 'px';
-            ld.style.height = window.innerHeight + 'px';
-            //ld.style.zIndex = 9999999;
             
         window.onload = ()=>{
 
