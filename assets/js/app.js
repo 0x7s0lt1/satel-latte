@@ -9,7 +9,7 @@ App = {
     is_draw_starting : true,
     is_tracking : false,
     km_show_interval : null,
-    socket : io('https://tletolatlng.herokuapp.com/'), //io('localhost:5000'),
+    socket : io('https://tletolatlng.herokuapp.com/'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
     loading : document.getElementById('loading'),
     cords_holder : document.getElementById('cord_tart'),
     buttons : document.querySelector('.btns'),
@@ -219,7 +219,7 @@ App = {
                 success: function (data) {
         
                     var markup = data.parse.text["*"];
-                    App.wiki_title.innerHTML = window.current_sat.toUpperCase();
+                    App.wiki_title.innerHTML = "<a target='_blank' href='https://en.wikipedia.org/"+window.tles[window.current_sat].wiki+"' >"+window.current_sat.toUpperCase()+"</a>";
                     App.wiki_modal_body.innerHTML = markup;
                     App.wiki_modal.show();
                     App.loading.style.display = 'none';

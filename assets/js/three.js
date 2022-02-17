@@ -1,19 +1,13 @@
-let scene,camera,renderer,controls,mouse,marker,sat_model,point_light;
+let scene,camera,renderer,clock,controls,raycaster,mouse,marker,directionalLight,sat_model,point_light;
 
 let changeSatelliteModel,drawOrbits;
 
-let clock = new THREE.Clock();
-
-let raycaster = new THREE.Raycaster();
-
-let isMobile = navigator.userAgent &&
-    navigator.userAgent.toLowerCase().indexOf('mobile') >= 0;
-let isSmall = window.innerWidth < 1000;
 
 import * as THREE from 'https://cdn.skypack.dev/three@v0.131.3';
 import { GLTFLoader } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/controls/OrbitControls.js';
+
 
 
 function init(){
@@ -33,6 +27,12 @@ function init(){
     renderer.domElement.addEventListener("click", onclick, true);
 
     mouse = new THREE.Vector2();
+    clock = new THREE.Clock();
+    raycaster = new THREE.Raycaster();
+
+    let isMobile = navigator.userAgent &&
+    navigator.userAgent.toLowerCase().indexOf('mobile') >= 0;
+    let isSmall = window.innerWidth < 1000;
 
     document.getElementById('three_map').appendChild(renderer.domElement);
 
@@ -52,21 +52,21 @@ function init(){
         raycaster.setFromCamera(mouse, camera);
         var intersects = raycaster.intersectObjects(scene.children, true); //array
     
-        if (intersects.length > 0) {
+        if (intersects.length > 0 ) {
             
-            //console.log(intersects[0].object.name);
-            controls.target =  intersects[0].object.getWorldPosition(new THREE.Vector3());
+            intersects[0].object.getWorldPosition(new THREE.Vector3());
     
         }
     
     }
+    
     const Cubeloader = new THREE.CubeTextureLoader();
     const texture = Cubeloader.load([
             
                 'assets/images/skybox/space/space_lf.png',
                 'assets/images/skybox/space/space_rt.png',
-                'assets/images/skybox/space/space_dn.png',
                 'assets/images/skybox/space/space_up.png',
+                'assets/images/skybox/space/space_dn.png',
                 'assets/images/skybox/space/space_ft.png',
                 'assets/images/skybox/space/space_bk.png'
         
@@ -78,7 +78,7 @@ function init(){
 
     const GLTFloader = new GLTFLoader();
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/libs/draco/');
+    dracoLoader.setDecoderPath( './assets/draco/');
     GLTFloader.setDRACOLoader( dracoLoader );
     
 
@@ -125,6 +125,7 @@ function init(){
     }
 
     var obj = new THREE.Object3D();
+    obj.name = 'obj';
     marker = new THREE.Object3D();
 
     marker.name = 'marker';
@@ -180,6 +181,7 @@ function init(){
             sat_model.scene.quaternion.setFromUnitVectors(
                 new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0));
 
+                directionalLight.target = sat_model.scene;
                 marker.add(sat_model.scene);
         });
 
@@ -214,8 +216,13 @@ function init(){
 
 
     var lightA = new THREE.AmbientLight(0xffffff);
-    //lightA.position.set(0, 200, 0);
+    lightA.position.set(0, 200, 0);
     scene.add(lightA);
+
+    directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    scene.add( directionalLight );
+    
+
     
     var rad = Math.PI / 180;
     
@@ -236,15 +243,30 @@ function init(){
         
         let startPoint = new THREE.Vector3(window.sat_orbits[1][0],window.sat_orbits[1][1]);
         let endPoint = window.sat_orbits[1][window.sat_orbits[1].lenth - 1];
+
+        for(let i = 0; i < window.sat_orbits[1].length; i++ ){
+
+            points.push(
+                new THREE.Euler(
+                    window.sat_orbits[1][i][0] * Math.PI / 180,
+                    0, 
+                    window.sat_orbits[1][i][1] * Math.PI / 180,
+                    "XYZ"
+                    )
+                );
+
+        }
         
         var line = new THREE.Line( 
             new THREE.BufferGeometry().setFromPoints( points ), 
-            new THREE.LineBasicMaterial( { color: 0xf5b905 } ) );
+            new THREE.LineBasicMaterial( { color: 0xf54242 } ) );
+
+            //new THREE.Euler(window.sat_cords.lat * Math.PI / 180,0, window.sat_cords.lng * Math.PI / 180,"XYZ"));
 
 
             //console.log(line);
 
-            //marker.add(line);
+            marker.add(line);
             
     }
 
@@ -267,10 +289,13 @@ function animate(){
     renderer.render(scene,camera);
     controls.update();
 
+
     if(window.sat_is_changed){
         
         if(window.tles[window.current_sat].has3D != ""){
-            changeSatelliteModel(window.current_sat);
+            changeSatelliteModel("c_"+window.current_sat);
+        }else{
+            changeSatelliteModel('default_sat');
         }
         window.sat_is_changed = false;
     }
