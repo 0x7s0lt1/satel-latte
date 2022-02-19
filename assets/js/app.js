@@ -219,7 +219,7 @@ App = {
                 success: function (data) {
         
                     var markup = data.parse.text["*"];
-                    App.wiki_title.innerHTML = "<a target='_blank' href='https://en.wikipedia.org/"+window.tles[window.current_sat].wiki+"' >"+window.current_sat.toUpperCase()+"</a>";
+                    App.wiki_title.innerHTML = "<a target='_blank' href='https://en.wikipedia.org/wiki/"+window.tles[window.current_sat].wiki+"' >"+window.current_sat.toUpperCase()+"</a>";
                     App.wiki_modal_body.innerHTML = markup;
                     App.wiki_modal.show();
                     App.loading.style.display = 'none';
