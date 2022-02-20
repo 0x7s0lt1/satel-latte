@@ -9,7 +9,7 @@ App = {
     is_draw_starting : true,
     is_tracking : false,
     km_show_interval : null,
-    socket : io('https://tletolatlng.herokuapp.com/'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
+    socket : io('localhost:5000'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
     loading : document.getElementById('loading'),
     cords_holder : document.getElementById('cord_tart'),
     buttons : document.querySelector('.btns'),

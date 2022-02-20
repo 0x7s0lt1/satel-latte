@@ -67,6 +67,14 @@ html,body{
     top: 0px;
     display: none;
 }
+.three_label{
+    
+    color: #FFF;
+    font-family: sans-serif;
+    padding: 2px;
+    background: rgba( 0, 0, 0, .6 );
+    
+}
 .mapboxgl-popup-close-button{
     display: none;
 }
@@ -153,10 +161,11 @@ html,body{
     transform: translateY(-4vw);
 }
 .controls section{
-    background-color: rgba(240, 236, 236, 0.99);
+    background-color: rgba(240, 236, 236, 0.59);
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgb(31 51 73 / 10%);
     padding: 1vw;
+    margin-bottom: 0.5vw;
     overflow: auto;
 }
 header{
@@ -196,6 +205,8 @@ label{
     text-align: center;
     margin: auto;
     font-size: 0.8vw;
+    color: rgb(70, 70, 70);
+    font-family: 'Courier New', Courier, monospace;
 }
 
 #cord_tart{
@@ -207,6 +218,7 @@ label{
     z-index: 2;
     text-align: center;
 }
+
 #cord{
     margin: auto;
     color: rgb(17, 17, 192);
@@ -296,6 +308,11 @@ label{
         top: 1.25vw;
         right: 10.5vw;
         z-index: 2;
+    }
+    .controls section{
+        
+        margin-bottom: 4.5vw;
+        overflow: auto;
     }
     .orbit_lines{
         font-size: 3vw;

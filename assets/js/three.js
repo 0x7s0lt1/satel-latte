@@ -1,13 +1,15 @@
-let scene,camera,renderer,clock,controls,raycaster,mouse,marker,directionalLight,sat_model,point_light;
+let scene,camera,renderer,labelRenderer,labelDiv,clock,controls,raycaster,mouse,marker,directionalLight,sat_model,label,point_light,clouds;
 
 let changeSatelliteModel,drawOrbits;
 
 
 import * as THREE from 'https://cdn.skypack.dev/three@v0.131.3';
+
+
 import { GLTFLoader } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/controls/OrbitControls.js';
-
+import { CSS2DRenderer, CSS2DObject } from 'https://cdn.skypack.dev/pin/three@v0.131.3-QQa34rwf1xM5cawaQLl8/mode=imports,min/unoptimized/examples/jsm/renderers/CSS2DRenderer.js';
 
 
 function init(){
@@ -23,8 +25,15 @@ function init(){
 
     renderer = new THREE.WebGLRenderer({antialias:true,alpha: false});
     renderer.setSize(window.innerWidth,window.innerHeight);
-
+    document.getElementById('three_map').appendChild(renderer.domElement);
     renderer.domElement.addEventListener("click", onclick, true);
+    
+
+    labelRenderer = new CSS2DRenderer();
+	labelRenderer.setSize( window.innerWidth, window.innerHeight );
+	labelRenderer.domElement.style.position = 'absolute';
+	labelRenderer.domElement.style.top = '0px';
+	document.getElementById('three_map').appendChild(labelRenderer.domElement);
 
     mouse = new THREE.Vector2();
     clock = new THREE.Clock();
@@ -34,14 +43,13 @@ function init(){
     navigator.userAgent.toLowerCase().indexOf('mobile') >= 0;
     let isSmall = window.innerWidth < 1000;
 
-    document.getElementById('three_map').appendChild(renderer.domElement);
-
     function onResize(){
         renderer.domElement.style.width = window.innerWidth + "px";
         renderer.domElement.style.height = window.innerHeight + "px";
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth,window.innerHeight);
+        labelRenderer.setSize( window.innerWidth, window.innerHeight );
     
     }
     window.addEventListener("resize",onResize);
@@ -82,7 +90,7 @@ function init(){
     GLTFloader.setDRACOLoader( dracoLoader );
     
 
-    controls = new OrbitControls(camera,renderer.domElement);
+    controls = new OrbitControls(camera,labelRenderer.domElement);
 
     controls.minDistance = 70;
     controls.maxDistance = 300;
@@ -130,10 +138,21 @@ function init(){
 
     marker.name = 'marker';
 
+    var mapTexture = THREE.ImageUtils.loadTexture("assets/images/textures/earth_atmos_2048.jpg");
+    var cloudsTexture = THREE.ImageUtils.loadTexture("assets/images/textures/earth_clouds_2048.png");
+    //var mapTexture = new THREE.CanvasTexture( document.getElementById('map') );
+
+    mapTexture.center = new THREE.Vector2(-6,6);
+
     var earth = new THREE.Mesh(
         new THREE.SphereGeometry(50, 32, 32),
-        new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture("assets/images/textures/map2.jpg")}));
+        new THREE.MeshPhongMaterial({map: mapTexture}));
     earth.name = 'earth';
+
+    clouds = new THREE.Mesh(
+        new THREE.SphereGeometry(51, 32, 32),
+        new THREE.MeshPhongMaterial({map: cloudsTexture,transparent: true,}));
+    clouds.name = 'clouds';
 
     GLTFloader.load('./assets/3d/default_sat.glb',(gltf)=>{
 
@@ -158,7 +177,15 @@ function init(){
                 createjs.Tween.get(point_light.scale,{loop :true}).to({x : 10, y : 10, z: 10},3000);
                 createjs.Tween.get(point_light.material,{loop :true}).to({opacity:0},1000);
 
-                
+
+        labelDiv = document.createElement( 'div' );
+		labelDiv.className = 'three_label';
+		labelDiv.textContent = 'Satellite';
+		labelDiv.style.marginTop = '-1em';
+		label = new CSS2DObject( labelDiv );
+		label.position.set( 72,0,0);
+
+		marker.add( label );
         marker.add(point_light);
         marker.add(sat_model.scene);
 
@@ -205,6 +232,8 @@ function init(){
     
     obj.add(marker);
     obj.add(earth);
+    obj.add(clouds);
+
     if(scene.add(obj)){
         document.getElementById('loading').style.display = 'none';
     }
@@ -215,11 +244,11 @@ function init(){
     }
 
 
-    var lightA = new THREE.AmbientLight(0xffffff);
-    lightA.position.set(0, 200, 0);
-    scene.add(lightA);
+    //var lightA = new THREE.AmbientLight(0xffffff);
+    //lightA.position.set(0, 200, 0);
+    //scene.add(lightA);
 
-    directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    directionalLight = new THREE.DirectionalLight( 0xffffff, 0.9 );
     scene.add( directionalLight );
     
 
@@ -287,6 +316,7 @@ function animate(){
 
     renderer.clear();
     renderer.render(scene,camera);
+    labelRenderer.render( scene, camera );
     controls.update();
 
 
@@ -297,6 +327,8 @@ function animate(){
         }else{
             changeSatelliteModel('default_sat');
         }
+        
+        labelDiv.textContent = window.current_sat.toUpperCase();
         window.sat_is_changed = false;
     }
 
@@ -314,9 +346,14 @@ function animate(){
         sat_model.scene.rotation.x += 0.0003;
         sat_model.scene.rotation.y += 0.0003;
         sat_model.scene.rotation.z += 0.0003;
+
+        clouds.rotation.y += 0.0005;
+
     }
     
-
+    
+    directionalLight.position.copy(camera.position);
+    directionalLight.rotation.copy(camera.rotation);
 
     //console.log(controls.getDistance());
     
