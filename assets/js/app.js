@@ -48,7 +48,7 @@ App = {
         iconAnchor: [22, 94],
         popupAnchor: [-3, -76],
     }),
-    sat_marker : L.marker([0,0],{
+    sat_marker : L.marker([-85, 180],{
         alt : 'Satellite Marker',
         opacity: 0
     }),
