@@ -1,4 +1,4 @@
-let scene,camera,renderer,labelRenderer,labelDiv,clock,controls,raycaster,mouse,earth,clouds,marker,directionalLight,sat_model,label,point_light;
+let scene,camera,renderer,labelRenderer,labelDiv,clock,controls,raycaster,mouse,earth,clouds,marker,orbits,directionalLight,sat_model,label,point_light;
 
 let changeSatelliteModel,drawOrbits;
 
@@ -27,6 +27,7 @@ function init(){
     THREE.DefaultLoadingManager.onLoad = function ( ) {
         document.getElementById('loading').style.display = 'none';    
         document.querySelector('.progress-bar').style.display = 'none';
+        document.querySelector('.menu').style.pointerEvents = "all";
     };
 
     scene = new THREE.Scene();
@@ -58,8 +59,7 @@ function init(){
     let isSmall = window.innerWidth < 1000;
 
     function onResize(){
-        renderer.domElement.style.width = window.innerWidth + "px";
-        renderer.domElement.style.height = window.innerHeight + "px";
+
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth,window.innerHeight);
@@ -84,9 +84,8 @@ function init(){
         
             ]);
 
-            
-
     scene.background = sky;
+
 
     const TextureLoader = new THREE.TextureLoader();
     const GLTFloader = new GLTFLoader();
@@ -194,6 +193,7 @@ function init(){
                         label.position.set( 72,0,0);
                         labelDiv.addEventListener('click',()=>{
                             
+                            console.log('clicked');
                             new TWEEN.Tween(camera.position).to(
                                 sat_model.scene.getWorldPosition(new THREE.Vector3()),
                                 2000
@@ -233,8 +233,10 @@ function init(){
             sat_model.scene.scale.y = 0.1;
             sat_model.scene.scale.z = 0.1;
             sat_model.scene.position.set(70,0,0);
+    
             sat_model.scene.quaternion.setFromUnitVectors(
                 new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0));
+                
 
                 marker.add(sat_model.scene);
                 obj.add(marker);
@@ -266,9 +268,11 @@ function init(){
     scene.add( directionalLight );
     
 
+    /*
     marker.quaternion.setFromEuler(
         new THREE.Euler(0, 19.252689* rad, 47.494341 * rad, "YZX")
         ); 
+        */
 
 
     camera.position.z += 200;
@@ -277,34 +281,45 @@ function init(){
 
     drawOrbits = ()=>{
 
-        let points = [];
+        obj.remove(orbits);
+        orbits = new THREE.Group();
+    
+        let colors = [
+            "orange",
+            "red",
+            "green"
+        ];
         
-        let startPoint = new THREE.Vector3(window.sat_orbits[1][0],window.sat_orbits[1][1]);
-        let endPoint = window.sat_orbits[1][window.sat_orbits[1].lenth - 1];
+        for(let ii = 0; ii < window.sat_orbits.length; ii++){
 
-        for(let i = 0; i < window.sat_orbits[1].length; i++ ){
+            let points = [];
 
-            points.push(
-                new THREE.Euler(
-                    window.sat_orbits[1][i][0] * rad,
-                    0, 
-                    window.sat_orbits[1][i][1] * rad,
-                    "XYZ"
-                    )
-                );
+            for(let i = 0; i < window.sat_orbits[ii].length; i++ ){
+
+                let cord = {
+                    lat : THREE.Math.degToRad( 90 - window.sat_orbits[ii][i][0] ),
+                    lng : THREE.Math.degToRad( window.sat_orbits[ii][i][1] )
+                }
+    
+                points.push( 
+                    new THREE.Vector3().setFromSphericalCoords( 70, cord.lat, cord.lng)
+                )
+                
+            }
+    
+    
+            let orbit = new THREE.Line( 
+                new THREE.BufferGeometry().setFromPoints( points ),
+                new THREE.LineBasicMaterial( {  color: colors[ii], linewidth: 0.5 } )
+                 );
+
+                 orbits.add(orbit);
 
         }
-        
-        var line = new THREE.Line( 
-            new THREE.BufferGeometry().setFromPoints( points ), 
-            new THREE.LineBasicMaterial( { color: 0xf54242 } ) );
 
-            //new THREE.Euler(window.sat_cords.lat * Math.PI / 180,0, window.sat_cords.lng * Math.PI / 180,"XYZ"));
+        obj.add(orbits);
 
-
-            //console.log(line);
-
-            marker.add(line);
+    
             
     }
 
@@ -331,6 +346,7 @@ function animate(){
             changeSatelliteModel('default_sat');
         }
 
+        drawOrbits();
         labelDiv.innerHTML = window.current_sat.toUpperCase();
         window.sat_is_changed = false;
 
@@ -340,10 +356,31 @@ function animate(){
 
     if(window.sat_cords != undefined){
 
-        marker.quaternion.setFromEuler(
-            new THREE.Euler(window.sat_cords.lat * Math.PI / 180,0, window.sat_cords.lng * Math.PI / 180,"XYZ"));
+        /*
+        marker.position.set(
+            new THREE.Vector3().setFromSphericalCoords( 
+                    0, 
+                    THREE.Math.degToRad( 90 - window.sat_cords.lat ), 
+                    THREE.Math.degToRad( window.sat_cords.lng )
+                ));
+                */
+                
+                
 
-            //drawOrbits();
+        
+        //marker.quaternion.setFromEuler(
+            //new THREE.Euler(window.sat_cords.lat * Math.PI / 180,0, window.sat_cords.lng * Math.PI / 180,"XYZ"));
+
+            
+        marker.quaternion.setFromEuler(
+            new THREE.Euler(THREE.Math.degToRad( 
+                90 - window.sat_cords.lat ),
+                0,
+                THREE.Math.degToRad( window.sat_cords.lng ),
+                "XYZ"
+                ));
+
+                
 
     }
 
