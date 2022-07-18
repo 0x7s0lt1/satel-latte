@@ -1,5 +1,5 @@
 <div align="center">
-<img align="center" src="https://cdn130.picsart.com/290053784015211.png?to=crop&type=webp&r=310x310&q=50">
+<img align="center" width="20%" src="https://images.squarespace-cdn.com/content/v1/5856c41e1b631bc1980c57ef/1581131432848-FFXA4V5B8VPZEVTEQL2Q/2462808150_12e7a41215_z.png">
 <h1>SATELLATTE</h1>
 <span>Simple TLE Map</span>
 </div>
