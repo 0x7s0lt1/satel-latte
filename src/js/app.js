@@ -2,33 +2,48 @@ L.mapbox.accessToken = 'pk.eyJ1Ijoia3VsaW9uZXIiLCJhIjoiY2tuNTB1YXhnMDg3dDJ1cDh0a
 
 App = {
 
+    socket : io('https://tletolatlng.herokuapp.com/'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
+    tleList : {},
     geo_cords : {},
     current_sat : null,
-    is_menu_open : true,
-    is_starting : true,
-    is_draw_starting : true,
-    is_tracking : false,
-    km_show_interval : null,
-    socket : io('https://tletolatlng.herokuapp.com/'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
-    loading : document.getElementById('loading'),
-    cords_holder : document.getElementById('cord_tart'),
-    buttons : document.querySelector('.btns'),
-    menu : document.querySelector('.menu'),
-    satellite_select : document.getElementById('sat_select'),
-    custom_tle : document.getElementById('custom_tle'),
-    wiki_modal : new bootstrap.Modal(document.getElementById('modal')),
-    wiki_modal_body : document.getElementById('wiki_modal'),
-    wiki_title : document.getElementById('wiki_title'),
-    cords_display : document.getElementById('cord'),
-    km_display :  document.getElementById('km'),
-    viewer_state : 'flat',
-    viewers : {
-        flat : document.getElementById('map'),
-        globe : document.getElementById('three_map')
+    tooltipTriggerList : [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')),
+    state : {
+        is_menu_open : true,
+        is_starting : true,
+        is_draw_starting : true,
+        is_tracking : false,
+        viewer : 'flat',
+    },
+    interval : {
+        showKM : null,
+    },
+    container : {
+        loading : document.getElementById('loading'),
+        menu : document.querySelector('.menu'),
+        quickBtns : document.querySelector('.btns'),
+        kmDisplay : document.getElementById('km'),
+        cordsDisplay : {
+            wrapper : document.getElementById('cord_tart'),
+            body : document.getElementById('cord')
+        },
+        wikiModal : {
+            modal : new bootstrap.Modal(document.getElementById('modal')),
+            title : document.getElementById('wiki_title'),
+            body  : document.getElementById('wiki_modal'),
+        }
+    },
+    button : {
 
     },
-    tooltipTriggerList : [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')),
-    
+    input : {
+        selectSatellite : document.getElementById('sat_select'),
+        customTLE : document.getElementById('custom_tle'),
+    },
+    viewer : {
+        flat : document.getElementById('map'),
+        globe : document.getElementById('three_map')
+    },
+
 
     map : L.map('map',{
             center : [30.313445, 3.212532],
@@ -63,25 +78,39 @@ App = {
 
     init : ()=>{
 
+        window.sat_is_changed = window.current_sat = false;
+    
         App.resize();
+        
+        fetch('./src/json/tle_list.json')
+        .then(res => res.json())
+        .then(json =>{
 
-        window.sat_is_changed = false;
-        window.current_sat = null;
-
-        for(let i in window.tles){
-            if(i !=  'UNKNOWN'){
-                App.satellite_select.innerHTML += "<option value='"+i+"'>"+ window.tles[i].has3D +" &nbsp;"+i.toUpperCase()+"</option>";
-
+            App.tleList = window.tles = json;
+            
+            for(let i in App.tleList){
+                if(i !=  'UNKNOWN'){
+                    App.input.selectSatellite.innerHTML += "<option value='"+i+"'>"+ App.tleList[i].has3D +" &nbsp;"+i.toUpperCase()+"</option>";
+    
+                }
             }
-        }
 
-        /*
+        });
+
+
         App.tooltipList = App.tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl,{
                 boundary: document.body
-            })
+            });;
             });
-        */
+        
+        App.tooltipTriggerList.forEach(e=>{
+            e.addEventListener('click',()=>{
+                App.tooltipList.forEach(t =>{
+                    t.hide();
+                });
+            })
+        })
 
         
         App.sat_marker.setIcon(App.sat_icon);
@@ -100,8 +129,8 @@ App = {
         App.socket.on('tleError',App.tleErrorHandler);
         App.socket.on('sendTrack',App.renderSatelliteTrack);
         window.addEventListener('resize',App.resize,false);
-        App.satellite_select.addEventListener('change',App.changeSatellite,false);
-        App.custom_tle.addEventListener('keydown',App.getCustomSatellite,false);
+        App.input.selectSatellite.addEventListener('change',App.changeSatellite,false);
+        App.input.customTLE.addEventListener('keydown',App.getCustomSatellite,false);
         document.getElementById('get_pos').addEventListener('click',App.getPosition,false);
         document.getElementById('info').addEventListener('click',App.getWiki,false);
     },
@@ -109,37 +138,37 @@ App = {
 
     toggleMenu : ()=>{
 
-        switch(App.is_menu_open){
+        switch(App.state.is_menu_open){
             case true:
-            App.menu.style.transform = 'translate(-100%)';
-            App.is_menu_open = false;
+            App.container.menu.style.transform = 'translate(-100%)';
+            App.state.is_menu_open = false;
                 break;
             case false:
-            App.menu.style.transform = 'translate(0%)';
-            App.is_menu_open = true;
+            App.container.menu.style.transform = 'translate(0%)';
+            App.state.is_menu_open = true;
                 break
         }
     },
 
     resize : ()=>{
-        App.loading.style.width = window.innerWidth + 'px';
-        App.loading.style.height = window.innerHeight + 'px';
-        App.viewers.flat.style.width = (window.innerWidth + 30) + "px";
-        App.viewers.flat.style.height = (window.innerHeight + 30) + "px";
+        App.container.loading.style.width = window.innerWidth + 'px';
+        App.container.loading.style.height = window.innerHeight + 'px';
+        App.viewer.flat.style.width = (window.innerWidth + 30) + "px";
+        App.viewer.flat.style.height = (window.innerHeight + 30) + "px";
         App.map.invalidateSize();
     },
     changeViewer : (state)=>{
 
         switch(state){
             case 'flat':
-                App.viewers.globe.style.display = 'none';
-                App.viewers.flat.style.display = 'block';
-                App.viewer_state = 'flat';
+                App.viewer.globe.style.display = 'none';
+                App.viewer.flat.style.display = 'block';
+                App.state.viewer = 'flat';
                 break;
             case 'globe':
-                App.viewers.flat.style.display = 'none';
-                App.viewers.globe.style.display = 'block';
-                App.viewer_state = 'globe';
+                App.viewer.flat.style.display = 'none';
+                App.viewer.globe.style.display = 'block';
+                App.state.viewer = 'globe';
                 break;
         }
         App.resize();
@@ -151,12 +180,12 @@ App = {
     },
     toggleTracking2D : ()=>{
 
-        if(App.is_tracking){
-            App.is_tracking = false;
+        if(App.state.is_tracking){
+            App.state.is_tracking = false;
             document.querySelector('.fa-crosshairs').classList.remove('tracking');
             document.querySelector('.fa-crosshairs').title = 'Tracking is OFF!';
         }else{
-            App.is_tracking = true;
+            App.state.is_tracking = true;
             document.querySelector('.fa-crosshairs').classList.add('tracking');
             document.querySelector('.fa-crosshairs').title = 'Tracking is ON!';
         }
@@ -164,19 +193,19 @@ App = {
     },
     changeSatellite : (tle = null)=>{
 
-        if(App.satellite_select.value != null){
+        if(App.input.selectSatellite.value != null){
 
-            App.wiki_modal.hide();
-            App.loading.style.display = 'block';
-            App.is_starting = true;
+            App.container.wikiModal.modal.hide();
+            App.container.loading.style.display = 'block';
+            App.state.is_starting = true;
             document.getElementById('info').classList.remove('disabled');
-            App.socket.emit('get',window.tles[App.satellite_select.value].tle);
-            window.current_sat = App.satellite_select.value;
+            App.socket.emit('get',App.tleList[App.input.selectSatellite.value].tle);
+            window.current_sat = App.input.selectSatellite.value;
 
         }
         else{
-            App.buttons.style.display = 'none';
-            App.cords_holder.style.display = 'none';
+            App.quickBtns.style.display = 'none';
+            App.container.cordsDisplay.wrapper.style.display = 'none';
         }
         if(App.geo_cords.user != undefined){
             App.removeLine();
@@ -186,13 +215,13 @@ App = {
 
         if(e.keyCode == 13){
 
-            let tle = App.custom_tle.value.trim();
+            let tle = App.input.customTLE.value.trim();
         
             if(tle != "" && tle != null){
                 
-                App.wiki_modal.hide();
-                App.loading.style.display = 'block';
-                App.is_starting = true;
+                App.container.wikiModal.modal.hide();
+                App.container.loading.style.display = 'block';
+                App.state.is_starting = true;
                 document.getElementById('info').classList.add('disabled');
     
                 App.socket.emit('get',tle);
@@ -209,27 +238,23 @@ App = {
 
         if(window.current_sat != 'UNKNOWN'){
 
-            App.loading.style.display = 'block';
-            $.ajax({
-                type: "GET",
-                url: "https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=0&page="+window.tles[window.current_sat].wiki+"&callback=?",
-                contentType: "application/json; charset=utf-8",
-                async: false,
-                dataType: "json",
-                success: function (data) {
-        
-                    var markup = data.parse.text["*"];
-                    App.wiki_title.innerHTML = "<a target='_blank' href='https://en.wikipedia.org/wiki/"+window.tles[window.current_sat].wiki+"' >"+window.current_sat.toUpperCase()+"</a>";
-                    App.wiki_modal_body.innerHTML = markup;
-                    App.wiki_modal.show();
-                    App.loading.style.display = 'none';
-    
-                },
-                error: function (err) {
-                    //console.log(err);
-                    App.loading.style.display = 'none';
-                }
-            });
+            App.container.loading.style.display = 'block';
+            
+            //let url = "https://en.wikipedia.org/w/api.php?&origin=*&action=parse&format=json&section=0&page="+App.tleList[window.current_sat].wiki+"&callback=?/";
+            let url = "https://en.wikipedia.org/api/rest_v1/page/summary/"+ App.tleList[window.current_sat].wiki;
+            fetch(url)
+            .then(response => response.json())
+            .then( json => {
+                
+                App.container.wikiModal.title.innerHTML = "<a target='_blank' href='https://en.wikipedia.org/wiki/"+App.tleList[window.current_sat].wiki+"' >"+window.current_sat.toUpperCase()+"</a>";
+                App.container.wikiModal.body.innerHTML = json.extract_html;
+                App.container.wikiModal.modal.show();
+                App.container.loading.style.display = 'none';
+            })
+            .catch(err => {
+                console.error("Fetch from Wikipedia",err);
+                App.container.loading.style.display = 'none';
+            })
 
         }else{
             App.oneError('Sorry!','<h3>We can only prived more information about built-in satellites.</h3>')
@@ -238,21 +263,7 @@ App = {
 
         
 
-    /*
-       App.xhttp.onreadystatechange = () =>{
-           if(this.readyState == 4 && this.state == 200){
-               console.log(this.responseText);
-           }
-       }
-
-        App.xhttp.open('GET',"https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=0&page="+window.tles[window.current_sat].wiki+"&callback=?",true);
-        App.xhttp.setRequestHeader("Api-User-Agent", "DotSatellitViewer/1.0 (https:dotlab.hu/satellites)");
-        App.xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
-        App.xhttp.setRequestHeader("Accept-Encoding", "gzip");
-        App.xhttp.setRequestHeader("Access-Control-Allow-Origin", "*");
-        App.xhttp.send();
-
-        */
+    
         
 
     },
@@ -268,12 +279,12 @@ App = {
             lng : data.cords.lng
         }
 
-        if(App.is_starting){
+        if(App.state.is_starting){
 
             window.sat_is_changed = true;
 
             App.sat_icon = L.icon({
-                iconUrl : './assets/images/satellites/'+window.current_sat+".png",
+                iconUrl : './src/images/satellites/'+window.current_sat+".png",
                 iconSize : [100,100]
             });
 
@@ -285,7 +296,7 @@ App = {
 
             App.sat_popup.setContent("<h1 class='mapPopup'>"+window.current_sat.toUpperCase()+"</h1>");
 
-            App.cords_display.innerHTML = "Lat: "+ App.geo_cords.sat[1].toFixed(10) +" | Lng: "+App.geo_cords.sat[0].toFixed(10);
+            App.container.cordsDisplay.body.innerHTML = "Lat: "+ App.geo_cords.sat[1].toFixed(10) +" | Lng: "+App.geo_cords.sat[0].toFixed(10);
         
                     App.map.on('mouseenter','satellite',(e)=>{
                         let cords = e.features[0].geometry.coordinates.slice();
@@ -300,20 +311,18 @@ App = {
                     
                     App.map.setView(App.geo_cords.sat,6)
     
-                    App.is_starting = false;
-                    App.buttons.style.display = 'block';
-                    App.cords_holder.style.display = 'block';
-                    App.loading.style.display = 'none';
+                    App.state.is_starting = false;
+                    App.container.quickBtns.style.display = 'block';
+                    App.container.cordsDisplay.wrapper.style.display = 'block';
+                    App.container.loading.style.display = 'none';
                     
-        
-        
         }else{
 
             App.sat_marker.setLatLng(App.geo_cords.sat);
             App.sat_marker.update();
-            App.cords_display.innerHTML = "Lat: "+ App.geo_cords.sat[1].toFixed(10) +" | Lng: "+App.geo_cords.sat[0].toFixed(10); 
+            App.container.cordsDisplay.body.innerHTML = "Lat: "+ App.geo_cords.sat[1].toFixed(10) +" | Lng: "+App.geo_cords.sat[0].toFixed(10); 
 
-            if(App.is_tracking){
+            if(App.state.is_tracking){
                 App.map.setView(App.geo_cords.sat);
             }
         
@@ -321,27 +330,27 @@ App = {
 
     },
     getPosition : ()=>{
-        App.km_display.innerHTML = "Calculating...";
-        App.km_display.style.display = 'block';
+        App.container.kmDisplay.innerHTML = "Calculating...";
+        App.container.kmDisplay.style.display = 'block';
         try{
             if(navigator.geolocation){
 
             navigator.geolocation.getCurrentPosition(pos=>{
             
                 App.geo_cords.user = [ pos.coords.latitude, pos.coords.longitude ];
-                App.km_show_interval = setInterval(App.drawLine,1000);
+                App.interval.showKM = setInterval(App.drawLine,1000);
                 document.getElementById('get_pos').removeEventListener('click',App.getPosition);
                 document.getElementById('get_pos').addEventListener('click',App.removeLine);
 
             },()=>{
-                App.km_display.innerHTML = "";
+                App.container.kmDisplay.innerHTML = "";
                 alert('For this future, turn on the GPS and enable GEOLOCATION!');
             })  
         }else{
             alert('Your device not support Geolocation features!:(')
         }
         }catch(err){
-            App.km_display.innerHTML = "";
+            App.container.kmDisplay.innerHTML = "";
             if(err) throw err;
             
         }
@@ -350,31 +359,31 @@ App = {
     drawLine : ()=>{
 
         
-        if(App.is_draw_starting){
+        if(App.state.is_draw_starting){
 
             App.sat_user_line.setLatLngs([App.geo_cords.user,App.geo_cords.sat]).addTo(App.map);
-            App.is_draw_starting = false;
+            App.state.is_draw_starting = false;
 
             App.user_field_of_view_line.setLatLng(App.geo_cords.user).addTo(App.map);
 
         }else{
 
             App.sat_user_line.setLatLngs([App.geo_cords.user,App.geo_cords.sat]);
-            App.km_display.innerHTML = turf.length(App.sat_user_line.toGeoJSON()).toLocaleString() + ' km';
+            App.container.kmDisplay.innerHTML = turf.length(App.sat_user_line.toGeoJSON()).toLocaleString() + ' km';
             
         }
 
     },
     removeLine : ()=>{
 
-        App.km_display.innerHTML = "";
+        App.container.kmDisplay.innerHTML = "";
         App.sat_user_line.remove();
         App.user_field_of_view_line.remove();
-        clearInterval(App.km_show_interval);
+        clearInterval(App.interval.showKM);
         document.getElementById('get_pos').removeEventListener('click',App.removeLine);
         document.getElementById('get_pos').addEventListener('click',App.getPosition);
-        App.km_display.style.display ='none';
-        App.is_draw_starting = true;
+        App.container.kmDisplay.style.display ='none';
+        App.state.is_draw_starting = true;
 
     },
     renderSatelliteTrack : (data)=>{
@@ -401,19 +410,19 @@ App = {
     },
     clearScreen : ()=>{
 
-        App.loading.style.display = 'none';
-        App.km_display.style.display ='none';
-        App.buttons.style.display = 'none';
-        App.cords_holder.style.display = 'none';
-        App.is_starting = true;
+        App.container.loading.style.display = 'none';
+        App.container.kmDisplay.style.display ='none';
+        App.quickBtns.style.display = 'none';
+        App.container.cordsDisplay.wrapper.style.display = 'none';
+        App.state.is_starting = true;
         Object.keys(App.sat_track_lines).forEach(e=>App.sat_track_lines[e].remove());
 
     },
     oneError : (title,message)=>{
 
-        App.wiki_title.innerHTML = title
-        App.wiki_modal_body.innerHTML = message;
-        App.wiki_modal.show();
+        App.container.wikiModal.title.innerHTML = title
+        App.container.wikiModal.body.innerHTML = message;
+        App.container.wikiModal.modal.show();
 
     },
     tleErrorHandler : (err)=>{

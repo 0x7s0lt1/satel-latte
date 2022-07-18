@@ -73,24 +73,23 @@ function init(){
 
     
     const Cubeloader = new THREE.CubeTextureLoader();
-    const sky = Cubeloader.load([
+    
+    scene.background = Cubeloader.load([
             
-                'assets/images/skybox/space/space_lf.png',
-                'assets/images/skybox/space/space_rt.png',
-                'assets/images/skybox/space/space_up.png',
-                'assets/images/skybox/space/space_dn.png',
-                'assets/images/skybox/space/space_ft.png',
-                'assets/images/skybox/space/space_bk.png'
-        
-            ]);
+        'src/images/skybox/space/space_lf.png',
+        'src/images/skybox/space/space_rt.png',
+        'src/images/skybox/space/space_up.png',
+        'src/images/skybox/space/space_dn.png',
+        'src/images/skybox/space/space_ft.png',
+        'src/images/skybox/space/space_bk.png'
 
-    scene.background = sky;
+    ]);
 
 
     const TextureLoader = new THREE.TextureLoader();
     const GLTFloader = new GLTFLoader();
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath( './assets/draco/');
+    dracoLoader.setDecoderPath( './src/draco/');
     GLTFloader.setDRACOLoader( dracoLoader );
     
 
@@ -141,21 +140,21 @@ function init(){
     marker = new THREE.Object3D();
 
 
-    TextureLoader.load("assets/images/textures/earth_atmos_2048.jpg",(eTexture)=>{
+    TextureLoader.load("src/images/textures/earth_atmos_2048.jpg",(eTexture)=>{
 
         earth = new THREE.Mesh(
             new THREE.SphereGeometry(50, 32, 32),
             new THREE.MeshPhongMaterial({map: eTexture}));
             obj.add(earth);
 
-            TextureLoader.load("assets/images/textures/earth_clouds_2048.png",(cTexture)=>{
+            TextureLoader.load("src/images/textures/earth_clouds_2048.png",(cTexture)=>{
 
                 clouds = new THREE.Mesh(
                     new THREE.SphereGeometry(51, 32, 32),
                     new THREE.MeshPhongMaterial({map: cTexture,transparent: true,}));
                     obj.add(clouds);
 
-                    GLTFloader.load('./assets/3d/default_sat.glb',(gltf)=>{
+                    GLTFloader.load('./src/3d/default_sat.glb',(gltf)=>{
 
                         sat_model = gltf;
                         sat_model.scene.name = 'satellite';
@@ -227,7 +226,7 @@ function init(){
         marker.remove(sat_model.scene);
         obj.remove(marker);
 
-        GLTFloader.load('./assets/3d/'+src+'.glb',(gltf)=>{
+        GLTFloader.load('./src/3d/'+src+'.glb',(gltf)=>{
             sat_model =  gltf;
             sat_model.scene.scale.x = 0.1;
             sat_model.scene.scale.y = 0.1;

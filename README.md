@@ -3,8 +3,5 @@
 # Install
 ### RUN:
 ```sh
- docker build  -t satellatte .
+ docker-compose up -d
  ```
- ```sh
- docker run -dp 80:80 satellatte 
-```
