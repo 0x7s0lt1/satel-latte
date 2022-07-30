@@ -1,14 +1,14 @@
-L.mapbox.accessToken = 'pk.eyJ1Ijoia3VsaW9uZXIiLCJhIjoiY2tuNTB1YXhnMDg3dDJ1cDh0aHRmNmc5diJ9.0D_Jj39P9DYUQ0oP2kyFOg';
-
+//TODO: Migrate to MapbogGL JS. Zoom in out change viewer
+mapboxgl.accessToken = 'pk.eyJ1Ijoia3VsaW9uZXIiLCJhIjoiY2tuNTB1YXhnMDg3dDJ1cDh0aHRmNmc5diJ9.0D_Jj39P9DYUQ0oP2kyFOg';
 App = {
 
-    socket : io('https://tletolatlng.herokuapp.com/'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
+    socket : io('localhost:5000'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
     tleList : {},
     geo_cords : {},
     current_sat : null,
     tooltipTriggerList : [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')),
     state : {
-        is_menu_open : true,
+        is_menu_open : false,
         is_starting : true,
         is_draw_starting : true,
         is_tracking : false,
@@ -43,42 +43,107 @@ App = {
         flat : document.getElementById('map'),
         globe : document.getElementById('three_map')
     },
+    map : {
 
-
-    map : L.map('map',{
+        map : new mapboxgl.Map({
+            container: 'map',
             center : [30.313445, 3.212532],
             zoom : 3,
-            minZoom: 2,
-            maxBounds : [[85, -180],[-85, 180]]
-            })
-            .addLayer(L.mapbox.styleLayer('mapbox://styles/kulioner/ckyx4j4u8006d15ldk73bk5gl',{
-                continuousWorld : true,  
-            })),
-    sat_popup : L.popup([],{
-        closeButton: false,
-        }),
-    sat_icon : L.icon({
-        iconUrl: '#',
-        iconSize: [50, 50],
-        iconAnchor: [22, 94],
-        popupAnchor: [-3, -76],
-    }),
-    sat_marker : L.marker([-85, 180],{
-        alt : 'Satellite Marker',
-        opacity: 0
-    }),
-    sat_user_line : L.polyline([],{color:'blue'}),
-    sat_track_lines : {
-        previous : L.polyline([],{color:'orange'}),
-        current : L.polyline([],{color:'red'}),
-        next : L.polyline([],{color:'green'})
-    },
-    user_field_of_view_line : L.circle([], 48280.3,{color : 'white',title:'Field of view'}),
-   
+            minZoom: 0,
+            projection: 'globe',
+            style:"mapbox://styles/kulioner/ckyx4j4u8006d15ldk73bk5gl",
+            }),
 
+        style : {
+            default : "mapbox://styles/kulioner/ckyx4j4u8006d15ldk73bk5gl",
+            night : "mapbox://styles/kulioner/cl5s47upd000814seqixyp60y"
+        }, 
+
+        markerElement : document.querySelector('.marker'),
+        marker : new mapboxgl.Marker(document.querySelector('.marker')).setLngLat([30.313445, 3.212532]),
+
+        popup : new mapboxgl.Popup({ closeButton: false,offset: 25  }),
+
+        user_field_of_view_line  : {}, //TODO: add user_field_of_view_line
+
+        userLine : {
+            'type': 'FeatureCollection',
+                    'features': [
+                        {
+                        'type': 'Feature',
+                        'properties': {
+                            'color': 'blue' 
+                            },
+                        'geometry': {
+                        'type': 'LineString',
+                        'coordinates': []
+                        }
+                    }
+                ]   
+            },
+        satOrbits : {
+
+            previous : {
+                'type': 'FeatureCollection',
+                        'features': [
+                            {
+                            'type': 'Feature',
+                            'properties': {
+                                'color': 'orange' 
+                                },
+                            'geometry': {
+                            'type': 'LineString',
+                            'coordinates': []
+                            }
+                        }
+                    ]   
+                },
+            current : {
+                'type': 'FeatureCollection',
+                        'features': [
+                            {
+                            'type': 'Feature',
+                            'properties': {
+                                'color': 'red' 
+                                },
+                            'geometry': {
+                            'type': 'LineString',
+                            'coordinates': []
+                            }
+                        }
+                    ]   
+                },
+            next : {
+                'type': 'FeatureCollection',
+                        'features': [
+                            {
+                            'type': 'Feature',
+                            'properties': {
+                                'color': 'green' 
+                                },
+                            'geometry': {
+                            'type': 'LineString',
+                            'coordinates': []
+                            }
+                        }
+                    ]   
+                },
+        }
+       
+    },
+
+    
+    /*
+   
+   
+    user_field_of_view_line : L.circle([], 48280.3,{color : 'white',title:'Field of view'}),
+   */
     init : ()=>{
 
+        
+        window.cords = {sat : {},user : {}};
         window.sat_is_changed = window.current_sat = false;
+       
     
         App.resize();
         
@@ -97,6 +162,7 @@ App = {
 
         });
 
+        
 
         App.tooltipList = App.tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl,{
@@ -113,26 +179,20 @@ App = {
         })
 
         
-        App.sat_marker.setIcon(App.sat_icon);
-        App.sat_marker.bindPopup(App.sat_popup);
-        App.sat_marker.addTo(App.map);
 
-        App.sat_marker.addEventListener('mouseover',()=>{
-            App.sat_marker.openPopup();
-        });
-        App.sat_marker.addEventListener('mouseout',()=>{
-            App.sat_marker.closePopup();
-        });
-
+        App.map.map.on('load', App.onMapLoad);
 
         App.socket.on('send',App.renderMapData);
         App.socket.on('tleError',App.tleErrorHandler);
         App.socket.on('sendTrack',App.renderSatelliteTrack);
+        App.socket.on('tleInfo',App.tleInfoHandler);
+
         window.addEventListener('resize',App.resize,false);
         App.input.selectSatellite.addEventListener('change',App.changeSatellite,false);
         App.input.customTLE.addEventListener('keydown',App.getCustomSatellite,false);
         document.getElementById('get_pos').addEventListener('click',App.getPosition,false);
         document.getElementById('info').addEventListener('click',App.getWiki,false);
+
     },
 
 
@@ -140,22 +200,34 @@ App = {
 
         switch(App.state.is_menu_open){
             case true:
-            App.container.menu.style.transform = 'translate(-100%)';
-            App.state.is_menu_open = false;
+            App.closeMenu();
+            for(i in App.viewer){
+                App.viewer[i].removeEventListener('click',App.closeMenu,false);
+            }
                 break;
             case false:
-            App.container.menu.style.transform = 'translate(0%)';
-            App.state.is_menu_open = true;
+            App.openMenu();
+            for(i in App.viewer){
+                App.viewer[i].addEventListener('click',App.closeMenu,false);
+               }
                 break
         }
-    },
 
+    },
+    closeMenu : ()=>{
+        App.container.menu.style.transform = 'translate(-100%)';
+        App.state.is_menu_open = false;
+    },
+    openMenu : ()=>{
+        App.container.menu.style.transform = 'translate(0%)';
+        App.state.is_menu_open = true;
+    },
     resize : ()=>{
         App.container.loading.style.width = window.innerWidth + 'px';
         App.container.loading.style.height = window.innerHeight + 'px';
         App.viewer.flat.style.width = (window.innerWidth + 30) + "px";
         App.viewer.flat.style.height = (window.innerHeight + 30) + "px";
-        App.map.invalidateSize();
+        App.map.map.resize();
     },
     changeViewer : (state)=>{
 
@@ -174,9 +246,70 @@ App = {
         App.resize();
 
     },
+    onMapLoad: async () =>{
+
+        App.map.map.setFog({
+            "range": [0.2, 0.3],
+            "horizon-blend": 0.2,
+            "star-intensity": 0.15
+        });
+
+        App.map.marker.setPopup(App.map.popup);
+        App.map.marker.addTo(App.map.map);
+
+        Object.keys(App.map.satOrbits).forEach(key=>{
+            App.map.map.addSource('orbit_'+key, {
+                'type': 'geojson',
+                'data': App.map.satOrbits[key]
+            });
+            App.map.map.addLayer({
+                'id': 'orbit_'+key,
+                'type': 'line',
+                'source': 'orbit_'+key,
+                'layout': {
+                    'visibility': 'none',
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': App.map.satOrbits[key].features[0].properties.color,
+                    'line-width': 4
+                }
+            });
+        });
+
+        App.map.map.addSource('user_line', {
+            'type': 'geojson',
+            'data': App.map.userLine
+        });
+        App.map.map.addLayer({
+            'id': 'user_line',
+            'type': 'line',
+            'source': 'user_line',
+            'layout': {
+                'visibility': 'none',
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': App.map.userLine.features[0].properties.color,
+                'line-width': 4
+            }
+        });
+
+        App.openMenu();
+
+        App.container.wikiModal.title.innerHTML = "Welcome!";
+        App.container.wikiModal.body.innerHTML = `<p>I working on this page while i'm on coffee break...\r\n                                     
+                                                        ..soo it's not perfect.\r\n
+                                                        Have a good clicking!
+                                                    .</p>`;
+        App.container.wikiModal.modal.show();
+
+    },
 
     centralizeMap : ()=>{
-        App.map.setView(App.geo_cords.sat,9);
+        App.map.map.flyTo({ 'center':  window.sat_cords.lngLat, 'zoom': 9, 'essential' : true });
     },
     toggleTracking2D : ()=>{
 
@@ -208,8 +341,9 @@ App = {
             App.container.cordsDisplay.wrapper.style.display = 'none';
         }
         if(App.geo_cords.user != undefined){
-            App.removeLine();
+            App.removeUserLine();
         }
+
     },
     getCustomSatellite : (e)=>{
 
@@ -259,74 +393,50 @@ App = {
         }else{
             App.oneError('Sorry!','<h3>We can only prived more information about built-in satellites.</h3>')
         }
-        
-
-        
-
     
-        
 
+    },
+    tleInfoHandler : (data)=>{
+        console.log("INFO:",data);
     },
     renderMapData : (data)=>{
 
-        App.geo_cords.sat = [
-            data.cords.lat,
-            data.cords.lng
-        ];
-
-        window.sat_cords = {
+        
+        window.cords.sat = {
             lat : data.cords.lat,
-            lng : data.cords.lng
+            lng : data.cords.lng,
+            lngLat : [ data.cords.lng, data.cords.lat ]
         }
 
         if(App.state.is_starting){
 
             window.sat_is_changed = true;
 
-            App.sat_icon = L.icon({
-                iconUrl : './src/images/satellites/'+window.current_sat+".png",
-                iconSize : [100,100]
-            });
-
+            App.map.popup.setHTML("<h1 class='mapPopup'>"+window.current_sat.toUpperCase()+"</h1>");
+            App.map.markerElement.style.backgroundImage = "url('./src/images/satellites/"+window.current_sat+".png')";
+            App.map.marker.setLngLat( window.cords.sat.lngLat );
             
-            App.sat_marker.setIcon(App.sat_icon);
-            App.sat_marker.setLatLng(App.geo_cords.sat);
-            App.sat_marker.setOpacity(1);
-            App.sat_marker.update();
-
-            App.sat_popup.setContent("<h1 class='mapPopup'>"+window.current_sat.toUpperCase()+"</h1>");
-
-            App.container.cordsDisplay.body.innerHTML = "Lat: "+ App.geo_cords.sat[1].toFixed(10) +" | Lng: "+App.geo_cords.sat[0].toFixed(10);
-        
-                    App.map.on('mouseenter','satellite',(e)=>{
-                        let cords = e.features[0].geometry.coordinates.slice();
-                        let desc = e.features[0].properties.description;
-    
-                        App.map_popup.setLngLat(cords).setHTML(desc).addTo(App.map);
-                    });
-                    App.map.on('mouseleave','satellite',(e)=>{
-                        App.map_popup.remove();
-                    });
-    
                     
-                    App.map.setView(App.geo_cords.sat,6)
-    
-                    App.state.is_starting = false;
-                    App.container.quickBtns.style.display = 'block';
-                    App.container.cordsDisplay.wrapper.style.display = 'block';
-                    App.container.loading.style.display = 'none';
+            App.map.map.flyTo({ 'center':  window.cords.sat.lngLat , 'zoom': 6 ,'essential' : true });
+
+            App.state.is_starting = false;
+            App.container.quickBtns.style.display = 'block';
+            App.container.cordsDisplay.wrapper.style.display = 'block';
+            App.container.loading.style.display = 'none';
+
                     
         }else{
 
-            App.sat_marker.setLatLng(App.geo_cords.sat);
-            App.sat_marker.update();
-            App.container.cordsDisplay.body.innerHTML = "Lat: "+ App.geo_cords.sat[1].toFixed(10) +" | Lng: "+App.geo_cords.sat[0].toFixed(10); 
+            App.map.marker.setLngLat(window.cords.sat.lngLat );
 
             if(App.state.is_tracking){
-                App.map.setView(App.geo_cords.sat);
+                App.map.map.flyTo({ 'center' : window.cords.sat.lngLat, 'essential' : true });
             }
         
         }
+
+        App.container.cordsDisplay.body.innerHTML = "Lat: " + window.cords.sat.lat.toFixed(10) +" | Lng: " + window.cords.sat.lng.toFixed(10);
+
 
     },
     getPosition : ()=>{
@@ -337,13 +447,19 @@ App = {
 
             navigator.geolocation.getCurrentPosition(pos=>{
             
-                App.geo_cords.user = [ pos.coords.latitude, pos.coords.longitude ];
-                App.interval.showKM = setInterval(App.drawLine,1000);
+                window.cords.user = {
+                    lng : pos.coords.longitude,
+                    lat : pos.coords.latitude,
+                    lngLat : [pos.coords.longitude, pos.coords.latitude]   
+                };
+
+                App.interval.showKM = setInterval(App.drawUserLine,1000);
                 document.getElementById('get_pos').removeEventListener('click',App.getPosition);
-                document.getElementById('get_pos').addEventListener('click',App.removeLine);
+                document.getElementById('get_pos').addEventListener('click',App.removeUserLine);
 
             },()=>{
                 App.container.kmDisplay.innerHTML = "";
+                App.container.kmDisplay.style.display = 'none';
                 alert('For this future, turn on the GPS and enable GEOLOCATION!');
             })  
         }else{
@@ -351,56 +467,60 @@ App = {
         }
         }catch(err){
             App.container.kmDisplay.innerHTML = "";
+            App.container.kmDisplay.style.display = 'none';
             if(err) throw err;
             
         }
 
     },
-    drawLine : ()=>{
+    drawUserLine : ()=>{
 
-        
         if(App.state.is_draw_starting){
-
-            App.sat_user_line.setLatLngs([App.geo_cords.user,App.geo_cords.sat]).addTo(App.map);
+            App.map.map.setLayoutProperty('user_line', 'visibility', 'visible');
             App.state.is_draw_starting = false;
-
-            App.user_field_of_view_line.setLatLng(App.geo_cords.user).addTo(App.map);
-
-        }else{
-
-            App.sat_user_line.setLatLngs([App.geo_cords.user,App.geo_cords.sat]);
-            App.container.kmDisplay.innerHTML = turf.length(App.sat_user_line.toGeoJSON()).toLocaleString() + ' km';
-            
         }
+        App.map.userLine.features[0].geometry.coordinates =  [ window.cords.user.lngLat,window.cords.sat.lngLat ];
+        App.map.map.getSource('user_line').setData( App.map.userLine );
+
+        let line = turf.lineString([ window.cords.user.lngLat, window.cords.sat.lngLat ]);
+        let userStaDiff = turf.length(line,{ units:'kilometers'} ).toFixed(2) + ' km';
+        App.container.kmDisplay.innerHTML = userStaDiff;
 
     },
-    removeLine : ()=>{
+    removeUserLine : ()=>{
+
+        clearInterval(App.interval.showKM);
 
         App.container.kmDisplay.innerHTML = "";
-        App.sat_user_line.remove();
-        App.user_field_of_view_line.remove();
-        clearInterval(App.interval.showKM);
-        document.getElementById('get_pos').removeEventListener('click',App.removeLine);
+        App.map.userLine.features[0].geometry.coordinates =  [];
+        App.map.map.getSource('user_line').setData( App.map.userLine );
+        App.map.map.setLayoutProperty('user_line', 'visibility', 'none');
+        //App.user_field_of_view_line.remove();
+        document.getElementById('get_pos').removeEventListener('click',App.removeUserLine);
         document.getElementById('get_pos').addEventListener('click',App.getPosition);
         App.container.kmDisplay.style.display ='none';
+    
         App.state.is_draw_starting = true;
 
     },
     renderSatelliteTrack : (data)=>{
 
-        data.forEach(e=>{
-            e.pop();
-        });
+        data.forEach(e => e.pop() );
 
         window.sat_orbits = data;
 
         try{
 
-        App.sat_track_lines.previous.setLatLngs(data[0]).addTo(App.map);
-        App.sat_track_lines.current.setLatLngs(data[1]).addTo(App.map);
-        App.sat_track_lines.next.setLatLngs(data[2]).addTo(App.map);
+            Object.keys(App.map.satOrbits).forEach((key,idx) =>{
 
+                App.map.satOrbits[key].features[0].geometry.coordinates = data[idx];
+                App.map.map.getSource('orbit_' + key).setData( App.map.satOrbits[key]);
+                App.map.map.setLayoutProperty('orbit_' + key, 'visibility', 'visible');
+
+            });
+            
         }catch(err){
+            console.error(err);
             App.clearScreen();
             App.oneError('Orbit Error','<h3>An error occurred while processing the orbit data.</h3>');
         }
@@ -412,10 +532,12 @@ App = {
 
         App.container.loading.style.display = 'none';
         App.container.kmDisplay.style.display ='none';
-        App.quickBtns.style.display = 'none';
+        App.container.quickBtns.style.display = 'none';
         App.container.cordsDisplay.wrapper.style.display = 'none';
         App.state.is_starting = true;
-        Object.keys(App.sat_track_lines).forEach(e=>App.sat_track_lines[e].remove());
+        Object.keys(App.map.satOrbits).forEach(key=>{
+            App.map.map.setLayoutProperty('orbit_' + key, 'visibility', 'none');
+        });
 
     },
     oneError : (title,message)=>{
@@ -428,8 +550,6 @@ App = {
     tleErrorHandler : (err)=>{
 
         console.log('ServerSide:',err);
-        App.sat_marker.setOpacity(0);
-        App.sat_marker.update();
         App.clearScreen();
         App.oneError('TLE Error!',`<h3>An error occurred while processing the TLE.</h3>`);
         

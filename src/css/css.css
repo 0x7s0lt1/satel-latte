@@ -30,17 +30,14 @@ html,body{
 .tooltip-inner{
     background-color: rgba(179, 177, 177,0.99);
     color: white;
-    text-shadow: 0px 0px 5pxx rgba(0, 0, 0,0.8);
+    text-shadow: 0px 0px 5px rgba(0, 0, 0,0.8);
     padding: 0.7vw;
     margin:  0vw 0.1vw 0vw 0.7vw;
 }
-.tooltip-arrow{
-   display: none;
-}
+
 #wiki_modal{
 
     background-size: cover;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs' width='1440' height='560' preserveAspectRatio='none' viewBox='0 0 1440 560'%3e%3cg mask='url(%26quot%3b%23SvgjsMask1001%26quot%3b)' fill='none'%3e%3cpath d='M 0%2c277 C 72%2c286.4 216%2c326.2 360%2c324 C 504%2c321.8 576%2c231 720%2c266 C 864%2c301 936%2c532 1080%2c499 C 1224%2c466 1368%2c180.6 1440%2c101L1440 560L0 560z' fill='rgba(3%2c 23%2c 124%2c 0.2)'%3e%3c/path%3e%3c/g%3e%3cdefs%3e%3cmask id='SvgjsMask1001'%3e%3crect width='1440' height='560' fill='white'%3e%3c/rect%3e%3c/mask%3e%3c/defs%3e%3c/svg%3e");
 }
 .leaflet-control-container{
     display: none;
@@ -70,16 +67,7 @@ html,body{
     
 }
 
-.mapboxgl-popup-close-button{
-    display: none;
-}
-.mapboxgl-popup-content-wrapper{
-    background-color: white;
-}
-.mapboxgl-popup-content{
-    background-color: white;
-    text-align: center;
-}
+
 .btns{
     display: none;
     position: absolute;
@@ -125,13 +113,15 @@ html,body{
     min-width: 15%;
     max-width: 15%;
     min-height: 100%;
-    background: rgba(219, 218, 218,0.9);
+    background: rgba(249, 249, 249, 0.9);
     box-shadow: 0px 0px 10px black;
     border-radius: 0px 8px 8px 0px;
     left: 0px;
     top: 0px;
     z-index: 100;
     pointer-events: none;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0,0.8);
+    transform: translate(-100%);
     
 }
 #menu_btn{
@@ -139,17 +129,18 @@ html,body{
     min-height: max-content;
     overflow: auto;
     min-width: 100%;
-    background: linear-gradient(to right,transparent 70%,rgba(179, 177, 177,0.99));
+    background: linear-gradient(to right,transparent 70%,rgba(255, 255, 255, 0.99));
     transition: all;
-    transform: translate(30%);
-    position: sticky;
-    border-radius: 0px 8px 8px 0px;
+    transform: translate(15%,-50%);
+    position: absolute;
+    top: calc(50% );
+    border-radius: 50% 8px 8px 50%;
     cursor: pointer;
     transition: all;
     transition-duration: 500ms;
 }
 #menu_btn:hover{
-    transform: translate(33%);
+    transform: translate(17%, -50%);
 }
 #menu_btn i {
     float: right;
@@ -158,18 +149,15 @@ html,body{
     margin-right: 0.5vw;
     text-shadow: 0px 0px 10px white;
 }
-.controls{
-    transform: translateY(-4vw);
-}
 .controls section{
-    background-color: rgba(169, 169, 169, 0.8);
+    background-color: rgba(255, 255, 255,1);/*rgba(169, 169, 169, 0.8);*/
     padding: 1vw;
     margin-bottom: 1vw;
     overflow: auto;
     color: white;
 }
 .controls textarea,select,option{
-    background-color: rgba(241, 240, 240, 0.8);
+    background-color:rgba(255, 255, 255,1); /*rgba(241, 240, 240, 0.8);*/
 }
 header{
     text-align: center; 
@@ -177,26 +165,23 @@ header{
 header span{
 
     font-family: 'Goldman', cursive;
-    text-shadow: 0px 0px 10px rgb(22, 38, 58);
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.6);
     color: white;
     font-size: 2vw;
     text-align: center;
-    
 }
+
+#coffee {
+    color: white;
+    text-decoration: none;
+}
+
 
 .c_btn{
     color: rgb(17, 17, 192);
     padding: 8px;
     font-family: 'Poppins', sans-serif;
     font-size: 0.7vw;
-}
-.orbit_lines{
-    font-size: 0.6vw;
-}
-.orbit_lines i{
-    font-size: 1.5vw;
-    transform: translateY(25%);
-    text-shadow: 0px 0px 30px rgba(14, 26, 39,0.4);
 }
 label{
     font-family: 'Poppins', sans-serif;
@@ -226,10 +211,9 @@ label{
 #cord{
     margin: auto;
     color: white;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0,0.8);
     padding: 10px;
     background-color: gray;
-    border-radius: 10px;
-    box-shadow:0px 0px 10px rgb(82, 82, 131) ;
     font-size: 15px;
     font-family: 'Poppins', sans-serif;
 }
@@ -246,14 +230,28 @@ label{
 .has3D{
     color: green;
 }
-.mapPopup{
-    font-family: 'Goldman', cursive;
-    padding: 0vw 1vw 0vw 1vw;
-    margin-top: 1vw;
-    background-color: rgba(14, 13, 13,0.9);
-    color: white;
-    text-shadow: 0px 0px 10px rgb(105, 105, 105);
+.marker {
+    background-image: url('');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
 }
+.mapboxgl-popup {
+    max-width: max-content;
+    font-size: 0.9vw;
+    background-color: rgba(14, 13, 13,0.9);
+    font-family: 'Goldman', cursive;
+    color: white;
+}
+.mapboxgl-popup-content {
+    margin-top: 1vw;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+}
+
 
 .disabled{
     color: rgb(163, 163, 163);
@@ -268,6 +266,10 @@ label{
 
 @media (max-width: 1023px) and (min-width: 0px) {
 
+    #map{
+        transition: all;
+        transform: translate(15px, 0px);
+    }
 
     .menu{
         min-width: 70%;
@@ -279,23 +281,31 @@ label{
     #menu_btn{
         min-width: 80%;
         max-width: 90%;
+        background: linear-gradient(to right,transparent 70%,rgba(255, 255, 255, 0.99));
+        z-index: 20;
+        transform: translate(43%,-50%);
+    }
+    #menu_btn:hover{
+
+        transform: translate(46%,-50%);
     }
     #menu_btn i {
         font-size: 10vw;
         margin-right: 2.5vw;
     }
-    .controls{
-        transform: translateY(-8vw);
-    }
+    
     header span{
 
         color: white;
-        background-color: rgba(34, 34, 34,0.7);
         padding: 1vw 3vw 1vw 3vw;
-        box-shadow: 0px 0px 10px rgba(43, 42, 42,0.6);
+        padding-top: 2vw;
+        text-shadow: 0px 0px 3px rgba(43, 42, 42,0.6);
         border-radius: 8px;
-        font-size: 9vw;
+        font-size: 2.5rem;
         
+    }
+    #coffee{
+        color: black;
     }
     .btns{
         font-size: 7vw;
@@ -314,17 +324,7 @@ label{
         margin-bottom: 4.5vw;
         overflow: auto;
     }
-    .orbit_lines{
-        font-size: 3vw;
-        padding-left: 2vw;
-        overflow: hidden;
-    }
-    .orbit_lines i{
-        font-size: 7vw;
-        transform: translateY(15%);
-        text-shadow: 0px 0px 5px rgba(39, 39, 39,0.5);
-        padding-bottom: 3vw;
-    }
+    
     .menu_footer{
         font-size: 2vw;
     }

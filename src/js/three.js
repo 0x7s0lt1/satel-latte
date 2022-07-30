@@ -1,8 +1,8 @@
-let scene,camera,renderer,labelRenderer,labelDiv,clock,controls,raycaster,mouse,earth,clouds,marker,orbits,directionalLight,sat_model,label,point_light;
+let scene,camera,renderer,labelRenderer,labelDiv,controls,earth,clouds,marker,orbits,directionalLight,sat_model,label,point_light;
 
 let changeSatelliteModel,drawOrbits;
 
-let rad = Math.PI / 180;
+
 
 import * as THREE from 'https://cdn.skypack.dev/three@v0.131.3';
 
@@ -50,10 +50,6 @@ function init(){
 	labelRenderer.domElement.style.top = '0px';
 	document.getElementById('three_map').appendChild(labelRenderer.domElement);
 
-    //mouse = new THREE.Vector2();
-    //clock = new THREE.Clock();
-    //raycaster = new THREE.Raycaster();
-
     let isMobile = navigator.userAgent &&
     navigator.userAgent.toLowerCase().indexOf('mobile') >= 0;
     let isSmall = window.innerWidth < 1000;
@@ -96,7 +92,7 @@ function init(){
 
     controls = new OrbitControls(camera,labelRenderer.domElement);
 
-    controls.minDistance = 85;
+    controls.minDistance = 15;
     controls.maxDistance = 300;
 
     controls.enableDamping= true;
@@ -118,7 +114,8 @@ function init(){
 
     */
 
-    
+    var obj = new THREE.Object3D();
+    marker = new THREE.Object3D();
 
     function randomStarPosition(){
         return Math.floor((Math.random() * ( 300 - -300 + 1 )) - 250) ;
@@ -135,9 +132,6 @@ function init(){
     
             scene.add(star);
     }
-
-    var obj = new THREE.Object3D();
-    marker = new THREE.Object3D();
 
 
     TextureLoader.load("src/images/textures/earth_atmos_2048.jpg",(eTexture)=>{
@@ -235,8 +229,7 @@ function init(){
     
             sat_model.scene.quaternion.setFromUnitVectors(
                 new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0));
-                
-
+            
                 marker.add(sat_model.scene);
                 obj.add(marker);
         });
@@ -353,7 +346,7 @@ function animate(){
         
     }
 
-    if(window.sat_cords != undefined){
+    if(window.cords != undefined){
 
         /*
         marker.position.set(
@@ -373,9 +366,9 @@ function animate(){
             
         marker.quaternion.setFromEuler(
             new THREE.Euler(THREE.Math.degToRad( 
-                90 - window.sat_cords.lat ),
+                90 - window.cords.sat.lng ),
                 0,
-                THREE.Math.degToRad( window.sat_cords.lng ),
+                THREE.Math.degToRad( window.cords.sat.lat ),
                 "XYZ"
                 ));
 
@@ -391,14 +384,17 @@ function animate(){
 
         clouds.rotation.y += 0.0005;
 
+        //let o = new THREE.Vector3(); 
+        //sat_model.scene.getWorldPosition(o);
+        //controls.target = o;
+        //console.log(controls.target);
+    
     }
     
     
     directionalLight.position.copy(camera.position);
     directionalLight.rotation.copy(camera.rotation);
-
-    //console.log(controls.getDistance());
-
+   
     renderer.clear();
     controls.update();
     TWEEN.update();
