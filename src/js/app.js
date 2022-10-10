@@ -1,8 +1,8 @@
-//TODO: Migrate to MapbogGL JS. Zoom in out change viewer
+//TODO: Migrate to MapbogGL JS, Zoom in out change viewer
 mapboxgl.accessToken = 'pk.eyJ1Ijoia3VsaW9uZXIiLCJhIjoiY2tuNTB1YXhnMDg3dDJ1cDh0aHRmNmc5diJ9.0D_Jj39P9DYUQ0oP2kyFOg';
 App = {
 
-    socket : io('localhost:5000'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
+    socket : io('https://tle-to-latlng.onrender.com/'), //io('localhost:5000'),io('https://tletolatlng.herokuapp.com/')
     tleList : {},
     geo_cords : {},
     current_sat : null,
