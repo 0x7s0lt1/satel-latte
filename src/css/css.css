@@ -50,7 +50,7 @@ html,body{
     background-color: black;
     
 }
-#three_map{
+/* #three_map{
     position: absolute;
     right: 0px;
     top: 0px;
@@ -65,7 +65,7 @@ html,body{
     background: rgba( 0, 0, 0, .6 );
     cursor: pointer;
     
-}
+} */
 
 
 .btns{
@@ -120,7 +120,6 @@ html,body{
     top: 0px;
     z-index: 100;
     pointer-events: none;
-    text-shadow: 0px 0px 5px rgba(0, 0, 0,0.8);
     transform: translate(-100%);
     
 }
@@ -149,6 +148,7 @@ html,body{
     margin-right: 0.5vw;
     text-shadow: 0px 0px 10px white;
 }
+
 .controls section{
     background-color: rgba(255, 255, 255,1);/*rgba(169, 169, 169, 0.8);*/
     padding: 1vw;
@@ -184,15 +184,8 @@ header span{
     font-size: 0.7vw;
 }
 label{
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Goldman', cursive;
     font-weight: bold;
-}
-.menu_footer{
-    position: absolute;
-    bottom: 0px;
-    text-align: center;
-    margin: auto;
-    font-size: 0.8vw;
     color: rgb(95, 95, 95);
 }
 
@@ -240,10 +233,10 @@ label{
 }
 .mapboxgl-popup {
     max-width: max-content;
-    font-size: 0.9vw;
-    background-color: rgba(14, 13, 13,0.9);
+    font-size: 0.5vw;
     font-family: 'Goldman', cursive;
-    color: white;
+    box-shadow: 0px 0px 10px rgba(53, 53, 53,0.6);
+    color: black;
 }
 .mapboxgl-popup-content {
     margin-top: 1vw;
@@ -324,8 +317,5 @@ label{
         overflow: auto;
     }
     
-    .menu_footer{
-        font-size: 2vw;
-    }
 
 }
