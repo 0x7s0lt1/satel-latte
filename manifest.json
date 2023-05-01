@@ -1,13 +1,13 @@
 {
   "background_color": "#4d3ccd",
-  "description": "Track sattelites realtime whit this map. Created by dotlab.hu",
+  "description": "Simple map for tracking TLE-s..",
   "dir": "auto",
   "display": "standalone",
-  "name": "LiveSatMap",
+  "name": "Satellatte",
   "orientation": "portrait",
   "scope": "/",
   "short_name": "LiveSatMap",
-  "start_url": "https://zsoltfehervari.xyz/public/livesat/",
+  "start_url": "https://zsoltfehervari.dev/public/satellatte/",
   "theme_color": "#000000",
   "categories": ["education","books"],
   "screenshots": [],
@@ -688,7 +688,7 @@
   "shortcuts": [
     {
       "name": "ISS(zarya)",
-      "url": "https://zsoltfehervari.xyz/public/livesat/?n=zarya",
+      "url": "https://zsoltfehervari.dev/public/satellatte/?n=zarya",
       "description": "National Space Station"
     }
   ]

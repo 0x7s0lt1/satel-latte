@@ -12,7 +12,6 @@ App = {
         is_starting : true,
         is_draw_starting : true,
         is_tracking : false,
-        viewer : 'flat',
     },
     interval : {
         showKM : null,
@@ -39,10 +38,7 @@ App = {
         selectSatellite : document.getElementById('sat_select'),
         customTLE : document.getElementById('custom_tle'),
     },
-    viewer : {
-        flat : document.getElementById('map'),
-        globe : document.getElementById('three_map')
-    },
+    viewer : document.getElementById('map'),
     map : {
 
         map : new mapboxgl.Map({
@@ -155,7 +151,7 @@ App = {
             
             for(let i in App.tleList){
                 if(i !=  'UNKNOWN'){
-                    App.input.selectSatellite.innerHTML += "<option value='"+i+"'>"+ App.tleList[i].has3D +" &nbsp;"+i.toUpperCase()+"</option>";
+                    App.input.selectSatellite.innerHTML += "<option value='"+i+"'> &nbsp;"+i.toUpperCase()+"</option>";
     
                 }
             }
@@ -163,7 +159,6 @@ App = {
         });
 
         
-
         App.tooltipList = App.tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl,{
                 boundary: document.body
@@ -193,6 +188,10 @@ App = {
         document.getElementById('get_pos').addEventListener('click',App.getPosition,false);
         document.getElementById('info').addEventListener('click',App.getWiki,false);
 
+        document.getElementById('loading').style.display = 'none';    
+        document.querySelector('.progress-bar').style.display = 'none';
+        document.querySelector('.menu').style.pointerEvents = "all";
+
     },
 
 
@@ -201,15 +200,11 @@ App = {
         switch(App.state.is_menu_open){
             case true:
             App.closeMenu();
-            for(i in App.viewer){
-                App.viewer[i].removeEventListener('click',App.closeMenu,false);
-            }
+            App.viewer.removeEventListener('click',App.closeMenu,false);
                 break;
             case false:
             App.openMenu();
-            for(i in App.viewer){
-                App.viewer[i].addEventListener('click',App.closeMenu,false);
-               }
+            App.viewer.addEventListener('click',App.closeMenu,false);
                 break
         }
 
@@ -225,26 +220,9 @@ App = {
     resize : ()=>{
         App.container.loading.style.width = window.innerWidth + 'px';
         App.container.loading.style.height = window.innerHeight + 'px';
-        App.viewer.flat.style.width = (window.innerWidth + 30) + "px";
-        App.viewer.flat.style.height = (window.innerHeight + 30) + "px";
+        App.viewer.style.width = (window.innerWidth + 30) + "px";
+        App.viewer.style.height = (window.innerHeight + 30) + "px";
         App.map.map.resize();
-    },
-    changeViewer : (state)=>{
-
-        switch(state){
-            case 'flat':
-                App.viewer.globe.style.display = 'none';
-                App.viewer.flat.style.display = 'block';
-                App.state.viewer = 'flat';
-                break;
-            case 'globe':
-                App.viewer.flat.style.display = 'none';
-                App.viewer.globe.style.display = 'block';
-                App.state.viewer = 'globe';
-                break;
-        }
-        App.resize();
-
     },
     onMapLoad: async () =>{
 
@@ -298,13 +276,6 @@ App = {
         });
 
         App.openMenu();
-
-        App.container.wikiModal.title.innerHTML = "Welcome!";
-        App.container.wikiModal.body.innerHTML = `<p>I working on this page while i'm on coffee break...\r\n                                     
-                                                        ..soo it's not perfect.\r\n
-                                                        Have a good clicking!
-                                                    .</p>`;
-        App.container.wikiModal.modal.show();
 
     },
 

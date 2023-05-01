@@ -86,16 +86,6 @@
         <header>
             <span>Satel<a id="coffee" href="https://www.buymeacoffee.com/zsoltfehervari" target="_blank"><i class="fad fa-coffee-togo"></i></a>latte</span>
         </header>
-
-
-        <section class="shadow rounded" data-bs-toggle="tooltip" data-bs-placement="right" title="Change map style">
-            
-            <div class="btn-group" role="group" style="min-width: 100%;">
-                <button onclick="App.changeViewer('flat')"  type="button" class="btn btn-outline-dark" >2D</button>
-                <button onclick="App.changeViewer('globe')" type="button" class="btn btn-outline-dark" >3D</button>
-            </div>
-            
-        </section>
         
         <section class="shadow rounded" data-bs-toggle="tooltip" data-bs-placement="right" title="Select a satellite to view">
         <select id="sat_select" class="form-select c_btn">
@@ -104,16 +94,16 @@
         </section>
      
         <section class="shadow rounded" data-bs-toggle="tooltip" data-bs-placement="right" title="Paste your own TLE" >
-        <label class="badge bg-secondary"><a style="color: white;" title="Aboute TLE" target="_blank" href="https://en.wikipedia.org/wiki/Two-line_element_set"><i class="fas fa-question-circle"></i></a></label>
+        <label class=""><a style="color: white;" title="Aboute TLE" target="_blank" href="https://en.wikipedia.org/wiki/Two-line_element_set"><i class="fas fa-question-circle"></i></a></label>
         <a target="_blank" style="color:white ;" title="TLE Database" href="https://celestrak.org/NORAD/elements/">Find some TLE !</a>
         <br>
-        <textarea style="resize: none;" class="form-control c_btn" id="custom_tle" type="text" placeholder="Paste your TLE here.."></textarea>
+        <textarea style="resize: none;" class="form-control c_btn my-2" id="custom_tle" type="text" placeholder="Paste your TLE here.."></textarea>
         </section>
 
     </section>
     <section class="menu_footer">
     
-        0.1.0
+        0.0.2
         
     </section>
     </div>
@@ -131,8 +121,7 @@
         
         <div id="map"></div>
         <div class="marker"></div>
-        <div id="three_map"></div>
-
+    
     
         <section id="cord_tart" style="display: none;">
             <span class="shadow rounded" id="cord"></span>
@@ -158,7 +147,6 @@
           
         </body>
         <script src="src/js/satellites.js"></script>
-        <script src="src/js/three.js" type="module"></script>
         <script src="./src/js/app.js"></script>
 
         <script>
